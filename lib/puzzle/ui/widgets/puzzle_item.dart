@@ -12,24 +12,22 @@ class PuzzleItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEmpty = text == null;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPointTap,
-        child: _ItemDecoration(
-          isBlank: isEmpty,
-          child: Center(
-            child: isEmpty
-                ? null
-                : Text(
-                    text!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 40,
-                    ),
+    return InkWell(
+      
+      onTap: onPointTap,
+      child: _ItemDecoration(
+        isBlank: isEmpty,
+        child: Center(
+          child: isEmpty
+              ? null
+              : Text(
+                  text!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 40,
                   ),
-          ),
+                ),
         ),
       ),
     );
@@ -47,12 +45,21 @@ class _ItemDecoration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Ink(
-      decoration: BoxDecoration(
-        color: isBlank ? Colors.transparent : Colors.blue[800],
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: child,
-    );
+    return isBlank
+        ? child
+        : Ink(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue[800]!,
+                  offset: const Offset(-6, 6),
+                )
+              ],
+              color: Colors.blue[800],
+              border: Border.all(color: Colors.white),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: child,
+          );
   }
 }

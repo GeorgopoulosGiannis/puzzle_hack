@@ -4,7 +4,7 @@ import 'package:puzzle_hack/puzzle/domain/entities/square_puzzle_matrix.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item.dart';
 
 abstract class _SizeConstants {
-  static const extraMargin = 5;
+  static const extraMargin = 10;
 }
 
 class Puzzle extends StatefulWidget {
