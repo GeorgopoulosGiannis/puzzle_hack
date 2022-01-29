@@ -14,21 +14,14 @@ class PuzzleScreen extends StatefulWidget {
 
 class _PuzzleScreenState extends State<PuzzleScreen> {
   late final puzzleMatrix = SquarePuzzleMatrix.generate(4);
+  bool holdingBtn = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [
-              Colors.blue,
-              Colors.white12,
-              Colors.blue,
-            ],
-          ),
+          color: Color(0xFFEFEEEE),
         ),
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -48,6 +41,7 @@ class _PuzzleScreenState extends State<PuzzleScreen> {
                       }
                     },
                   ),
+                  
                   const Moves(),
                   const CorrectTiles(),
                 ],

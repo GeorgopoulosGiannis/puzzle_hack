@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 class ShuffleButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   const ShuffleButton({
     Key? key,
-    required this.onTap,
-
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -21,7 +20,7 @@ class ShuffleButton extends StatelessWidget {
           }),
           padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
             (states) {
-              if (states.contains(MaterialState.pressed) ) {
+              if (states.contains(MaterialState.pressed)) {
                 return const EdgeInsets.all(20);
               }
               return const EdgeInsets.all(15);

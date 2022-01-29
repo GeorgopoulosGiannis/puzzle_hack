@@ -20,32 +20,60 @@ class Puzzle extends StatefulWidget {
 }
 
 class _PuzzleState extends State<Puzzle> {
+  late final puzzleMatrix = widget.matrix;
+
   late final screenSize = MediaQuery.of(context).size;
   late final height = screenSize.height * 0.6;
   late final width = screenSize.width * 0.4;
 
   late final _itemHeight =
       (height / puzzleMatrix.columnsLength) - _SizeConstants.extraMargin;
-  late final puzzleMatrix = widget.matrix;
+
+  late final _itemWidth =
+      (width / puzzleMatrix.columnsLength) - _SizeConstants.extraMargin;
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: height,
-        maxWidth: width,
+    return Container(
+      height: height + _SizeConstants.extraMargin * 2,
+      width: width + _SizeConstants.extraMargin * 2,
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withOpacity(0.8),
+            offset: const Offset(-6.0, -6.0),
+            blurRadius: 16.0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            offset: const Offset(6.0, 6.0),
+            blurRadius: 16.0,
+          ),
+        ],
+        color: const Color(0xFFEFEEEE),
+        borderRadius: BorderRadius.circular(12.0),
       ),
       child: Stack(
         children: puzzleMatrix.points.map((e) {
           final data = e?.data;
 
+          final topOffset =
+              ((_itemHeight * e!.x) + (_SizeConstants.extraMargin * e.x)) +
+                  _SizeConstants.extraMargin;
+
+          final leftOffset =
+              ((_itemWidth * e.y) + (_SizeConstants.extraMargin * e.y)) +
+                  _SizeConstants.extraMargin;
+
           return AnimatedPositioned(
             curve: Curves.easeInOut,
-            key: Key(data.toString()),
-            top: (_itemHeight * e!.x) + (_SizeConstants.extraMargin * e.x),
-            left: (_itemHeight * e.y) + (_SizeConstants.extraMargin * e.y),
+            key: Key(
+              data.toString(),
+            ),
+            top: topOffset,
+            left: leftOffset,
             height: _itemHeight,
-            width: _itemHeight,
+            width: _itemWidth,
             duration: const Duration(milliseconds: 400),
             child: PuzzleItem(
               text: e.data,

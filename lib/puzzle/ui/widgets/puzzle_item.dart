@@ -12,8 +12,7 @@ class PuzzleItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isEmpty = text == null;
-    return InkWell(
-      
+    return GestureDetector(
       onTap: onPointTap,
       child: _ItemDecoration(
         isBlank: isEmpty,
@@ -47,7 +46,7 @@ class _ItemDecoration extends StatelessWidget {
   Widget build(BuildContext context) {
     return isBlank
         ? child
-        : Ink(
+        : Container(
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
