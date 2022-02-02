@@ -1,62 +1,77 @@
 import 'dart:developer' as developer;
 import 'dart:math';
 import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
+import 'package:puzzle_hack/puzzle/domain/entities/is_solvable.dart';
 
 import 'point.dart';
 
-class SquarePuzzleMatrix {
+class SquarePuzzleMatrix with ChangeNotifier {
   final int order;
 
   int get columnsLength => order;
 
-  int numberOfInversions = 0;
+  int correctlyPlacedTiles = 0;
 
-  bool isSolvable() {
-    if (order.isOdd) {
-      return numberOfInversions.isEven;
-    } else {
-      final blank = getBlankPosition();
-      return (blankIsOnEvenRowFromBottom(blank) && numberOfInversions.isOdd) ||
-          (!blankIsOnEvenRowFromBottom(blank) && numberOfInversions.isEven);
+  List<Point> _clone(List<Point> _points) {
+    final result = <Point>[];
+    for (var i = 0; i < _points.length; i++) {
+      result.add(_points[i].copy());
     }
+    return result;
   }
 
-  void shuffle() {
-    numberOfInversions = 0;
+  void shuffle() async {
+    for (var i = 0; i < 10; i++) {
+      _shuffle();
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 250));
+    }
+    totalMoves = 0;
+    resetCorrectness();
+    notifyListeners();
+  }
 
+  void _shuffle() {
     final random = Random();
+
     // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+
     for (var i = points.length - 1; i > 0; i--) {
       int n = random.nextInt(i + 1);
-      swapData(points[i]!, points[n]!);
-      numberOfInversions++;
-      developer.log('numberOfInversions :$numberOfInversions');
+      swapData(points[i], points[n]);
     }
-    
-    if (!isSolvable()) {
+    final flatPoints = points.fold<List<int?>>(
+        [],
+        (prev, cur) => [
+              ...prev,
+              cur.isBlank ? null : int.parse(cur.data!),
+            ]);
+    bool _solvable = isSolvable(flatPoints, order);
+    while (!_solvable) {
       developer.log('Shuffled an unsolvable puzzle adding one more inversion');
+
       int i = points.length - 1;
       int j = random.nextInt(points.length - 2);
-      swapData(points[i]!, points[j]!);
-      numberOfInversions++;
-      developer.log('numberOfInversions :$numberOfInversions');
+      swapData(points[i], points[j]);
+      final flatPoints = points.fold<List<int?>>(
+          [],
+          (prev, cur) => [
+                ...prev,
+                cur.isBlank ? null : int.parse(cur.data!),
+              ]);
+      _solvable = isSolvable(flatPoints, order);
     }
-    
-  }
-
-  void invertPoints(int idx1, int idx2) {
-    Point tmp = points[idx1]!;
-    points[idx1] = points[idx2];
-    points[idx2] = tmp;
   }
 
   bool blankIsOnEvenRowFromBottom(Point point) {
-    return (order - point.x).isEven;
+    final result = (order - point.x).isEven;
+    return result;
   }
 
-  late List<Point?> points;
+  late List<Point> points;
 
-  Point getBlankPosition() => points.firstWhere((p) => p?.data == null)!;
+  Point getBlankPosition() => points.firstWhere((p) => p.isBlank);
 
   int totalMoves = 0;
 
@@ -81,7 +96,10 @@ class SquarePuzzleMatrix {
         tmpPoints[index] = point;
       }
     }
-    points = tmpPoints;
+
+    points = tmpPoints as List<Point>;
+
+    correctlyPlacedTiles = points.length - 1;
   }
 
   bool onPointTap(Point point) {
@@ -89,10 +107,15 @@ class SquarePuzzleMatrix {
       return false;
     }
 
-    return movePoint(point, getPointBelow) ||
+    if (movePoint(point, getPointBelow) ||
         movePoint(point, getPointAbove) ||
         movePoint(point, getPointToTheRight) ||
-        movePoint(point, getPointToTheLeft);
+        movePoint(point, getPointToTheLeft)) {
+      totalMoves++;
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   int getPointIndex(Point point) {
@@ -117,9 +140,7 @@ class SquarePuzzleMatrix {
         //!IMPORTANT nextPoint and point data here will appear the same
         //! because data is changed in the actual points list
         for (var i = pointsWalked.length - 1; i >= 0; i--) {
-          // We cant pass point here as a second argument because data is only changed in the list
-          // so we grab the fresh point from points list with index
-          swapData(pointsWalked[i], points[getPointIndex(point)]!);
+          swapData(pointsWalked[i], point);
           point = pointsWalked[i];
         }
         return true;
@@ -135,32 +156,71 @@ class SquarePuzzleMatrix {
   /// Point1 and point2 will not be directly changed
   /// but data in [points] list will.
   void swapData(Point point1, Point point2) {
-    points[getPointIndex(point1)] = point1.changeData(point2.data);
-    points[getPointIndex(point2)] = point2.changeData(point1.data);
-    totalMoves++;
+    final tmpData = point2.data;
+
+    bool pt1Before = checkPointPosition(point1);
+    bool pt2Before = checkPointPosition(point2);
+
+    point2.data = point1.data;
+    point1.data = tmpData;
+
+    bool pt1After = checkPointPosition(point1);
+    bool pt2After = checkPointPosition(point2);
+
+    if (pt1Before && !pt1After) {
+      correctlyPlacedTiles--;
+    }
+    if (!pt1Before && pt1After) {
+      correctlyPlacedTiles++;
+    }
+    if (pt2Before && !pt2After) {
+      correctlyPlacedTiles--;
+    }
+    if (!pt2Before && pt2After) {
+      correctlyPlacedTiles++;
+    }
+  }
+
+  bool checkPointPosition(Point point) {
+    if (point.isBlank) {
+      return true;
+    }
+    final idx = getPointIndex(point);
+
+    return idx == int.parse(point.data!) - 1;
+  }
+
+  void resetCorrectness() {
+    correctlyPlacedTiles = 0;
+    for (var i = 0; i < points.length; i++) {
+      if (checkPointPosition(points[i])) {
+        correctlyPlacedTiles++;
+      }
+    }
+    notifyListeners();
   }
 
   Point? getPointAbove(Point point) {
     return points.firstWhereOrNull(
-      (p) => p?.x == point.x - 1 && p?.y == point.y,
+      (p) => p.x == point.x - 1 && p.y == point.y,
     );
   }
 
   Point? getPointBelow(Point point) {
     return points.firstWhereOrNull(
-      (p) => p?.x == point.x + 1 && p?.y == point.y,
+      (p) => p.x == point.x + 1 && p.y == point.y,
     );
   }
 
   Point? getPointToTheRight(Point point) {
     return points.firstWhereOrNull(
-      (p) => p?.x == point.x && p?.y == point.y + 1,
+      (p) => p.x == point.x && p.y == point.y + 1,
     );
   }
 
   Point? getPointToTheLeft(Point point) {
     return points.firstWhereOrNull(
-      (p) => p?.x == point.x && p?.y == point.y - 1,
+      (p) => p.x == point.x && p.y == point.y - 1,
     );
   }
 }

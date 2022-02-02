@@ -1,19 +1,19 @@
 class Point {
   final int x;
   final int y;
-  final String? data;
+  String? data;
+
+  Point copy() => Point(
+        data: data,
+        x: x,
+        y: y,
+      );
 
   Point({
     required this.x,
     required this.y,
     required this.data,
   });
-
-  Point changeData(String? newData) => Point(
-        x: x,
-        y: y,
-        data: newData,
-      );
 
   bool get isBlank => data == null;
 

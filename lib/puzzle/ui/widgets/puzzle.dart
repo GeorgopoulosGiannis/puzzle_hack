@@ -55,16 +55,15 @@ class _PuzzleState extends State<Puzzle> {
       ),
       child: Stack(
         children: puzzleMatrix.points.map((e) {
-          final data = e?.data;
+          final data = e.data;
 
           final topOffset =
-              ((_itemHeight * e!.x) + (_SizeConstants.extraMargin * e.x)) +
+              ((_itemHeight * e.x) + (_SizeConstants.extraMargin * e.x)) +
                   _SizeConstants.extraMargin;
 
           final leftOffset =
               ((_itemWidth * e.y) + (_SizeConstants.extraMargin * e.y)) +
                   _SizeConstants.extraMargin;
-
           return AnimatedPositioned(
             curve: Curves.easeInOut,
             key: Key(

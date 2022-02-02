@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 class CorrectTiles extends StatelessWidget {
-  const CorrectTiles({Key? key}) : super(key: key);
+  final int correctNo;
+  const CorrectTiles(this.correctNo, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      '15 Tiles',
-      style: TextStyle(
+    return  Text(
+      '$correctNo Tiles',
+      style: const TextStyle(
         fontWeight: FontWeight.bold,
       ),
     );
