@@ -1,92 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:puzzle_hack/puzzle/domain/entities/point.dart';
 
 import 'package:puzzle_hack/puzzle/domain/entities/square_puzzle_matrix.dart';
-import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item.dart';
+import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item_bubble.dart';
 
-abstract class _SizeConstants {
-  static const extraMargin = 10;
-}
+import '../pages/bloc/puzzle_screen_bloc.dart';
 
 class Puzzle extends StatefulWidget {
   final SquarePuzzleMatrix matrix;
+  final double itemWidth;
+  final double itemHeight;
+  final void Function(Point) onPointTap;
 
   const Puzzle({
     Key? key,
+    required this.onPointTap,
     required this.matrix,
+    required this.itemWidth,
+    required this.itemHeight,
   }) : super(key: key);
 
   @override
   State<Puzzle> createState() => _PuzzleState();
 }
 
-class _PuzzleState extends State<Puzzle> {
-  late final puzzleMatrix = widget.matrix;
-
-  late final screenSize = MediaQuery.of(context).size;
-  late final height = screenSize.height * 0.6;
-  late final width = screenSize.width * 0.4;
-
-  late final _itemHeight =
-      (height / puzzleMatrix.columnsLength) - _SizeConstants.extraMargin;
-
-  late final _itemWidth =
-      (width / puzzleMatrix.columnsLength) - _SizeConstants.extraMargin;
+class _PuzzleState extends State<Puzzle> with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(vsync: this, duration: Duration(seconds: 5));
+  late final _turnAnimation = Tween<double>(begin: 0, end: 5).animate(
+    CurvedAnimation(
+      parent: _controller,
+      curve: Curves.linear,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: height + _SizeConstants.extraMargin * 2,
-      width: width + _SizeConstants.extraMargin * 2,
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: Colors.white.withOpacity(0.8),
-            offset: const Offset(-6.0, -6.0),
-            blurRadius: 16.0,
+    return BlocConsumer<PuzzleScreenBloc, PuzzleScreenState>(
+      listener: (context, state) {
+        if (state.isShuffling && !_controller.isAnimating) {
+          _controller.forward();
+        }
+        if (!state.isShuffling && _controller.isAnimating) {
+          _controller.reset();
+        }
+      },
+      builder: (context, state) {
+        return RotationTransition(
+          turns: _turnAnimation,
+          child: Stack(
+            children: widget.matrix.points.map(
+              (e) {
+                final data = e.data;
+                return AnimatedAlign(
+                  curve: Curves.easeInOut,
+                  key: Key(
+                    data.toString(),
+                  ),
+                  alignment: FractionalOffset(
+                    ((e.x) / (widget.matrix.order - 1)),
+                    (e.y) / (widget.matrix.order - 1),
+                  ),
+                  duration: const Duration(milliseconds: 400),
+                  child: SizedBox(
+                    height: widget.itemHeight,
+                    width: widget.itemWidth,
+                    child: PuzzleItemBubble(
+                      p: e,
+                      onPointTap: data != null
+                          ? () {
+                              widget.onPointTap(e);
+                            }
+                          : null,
+                    ),
+                  ),
+                );
+              },
+            ).toList(),
           ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            offset: const Offset(6.0, 6.0),
-            blurRadius: 16.0,
-          ),
-        ],
-        color: const Color(0xFFEFEEEE),
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Stack(
-        children: puzzleMatrix.points.map((e) {
-          final data = e.data;
-
-          final topOffset =
-              ((_itemHeight * e.x) + (_SizeConstants.extraMargin * e.x)) +
-                  _SizeConstants.extraMargin;
-
-          final leftOffset =
-              ((_itemWidth * e.y) + (_SizeConstants.extraMargin * e.y)) +
-                  _SizeConstants.extraMargin;
-          return AnimatedPositioned(
-            curve: Curves.easeInOut,
-            key: Key(
-              data.toString(),
-            ),
-            top: topOffset,
-            left: leftOffset,
-            height: _itemHeight,
-            width: _itemWidth,
-            duration: const Duration(milliseconds: 400),
-            child: PuzzleItem(
-              text: e.data,
-              onPointTap: data != null
-                  ? () {
-                      if (puzzleMatrix.onPointTap(e)) {
-                        setState(() {});
-                      }
-                    }
-                  : null,
-            ),
-          );
-        }).toList(),
-      ),
+        );
+      },
     );
   }
 }

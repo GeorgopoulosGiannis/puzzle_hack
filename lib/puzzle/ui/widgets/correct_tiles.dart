@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../pages/bloc/puzzle_screen_bloc.dart';
 
 class CorrectTiles extends StatelessWidget {
-  final int correctNo;
-  const CorrectTiles(this.correctNo, {Key? key}) : super(key: key);
+  const CorrectTiles({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return  Text(
-      '$correctNo Tiles',
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-      ),
+    return BlocBuilder<PuzzleScreenBloc, PuzzleScreenState>(
+      builder: (context, state) {
+        return Text(
+          '${state.correctNo} Tiles',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        );
+      },
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'dart:developer' as developer;
 import 'dart:math';
+import 'dart:typed_data';
+import 'package:image/image.dart' as imglib;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:puzzle_hack/puzzle/domain/entities/is_solvable.dart';
@@ -13,15 +15,7 @@ class SquarePuzzleMatrix with ChangeNotifier {
 
   int correctlyPlacedTiles = 0;
 
-  List<Point> _clone(List<Point> _points) {
-    final result = <Point>[];
-    for (var i = 0; i < _points.length; i++) {
-      result.add(_points[i].copy());
-    }
-    return result;
-  }
-
-  void shuffle() async {
+  Future<void> shuffle() async {
     for (var i = 0; i < 10; i++) {
       _shuffle();
       notifyListeners();
@@ -36,7 +30,6 @@ class SquarePuzzleMatrix with ChangeNotifier {
     final random = Random();
 
     // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
-
     for (var i = points.length - 1; i > 0; i--) {
       int n = random.nextInt(i + 1);
       swapData(points[i], points[n]);
@@ -88,6 +81,7 @@ class SquarePuzzleMatrix with ChangeNotifier {
 
         developer.log('[i][j] : [$i],[$j] ----> data:$data');
         final point = Point(
+          img: null,
           x: i,
           y: j,
           data: data,
@@ -97,9 +91,63 @@ class SquarePuzzleMatrix with ChangeNotifier {
       }
     }
 
-    points = tmpPoints as List<Point>;
+    points = tmpPoints.cast<Point>();
 
     correctlyPlacedTiles = points.length - 1;
+  }
+  SquarePuzzleMatrix.generateFromImage(this.order, List<int> input) {
+    final total = order * order;
+    final tmpPoints = List<Point?>.generate(order * order, (index) => null);
+    final imgParts = splitImage(order, input);
+    for (var i = 0; i < order; i++) {
+      for (var j = 0; j < order; j++) {
+        final index = (i * order) + j;
+        final data = index == total - 1 ? null : (index + 1).toString();
+
+        developer.log('[i][j] : [$i],[$j] ----> data:$data');
+        final point = Point(
+          img: imgParts[index],
+          x: i,
+          y: j,
+          data: data,
+        );
+
+        tmpPoints[index] = point;
+      }
+    }
+
+    points = tmpPoints.cast<Point>();
+
+    correctlyPlacedTiles = points.length - 1;
+  }
+
+  List<Image> splitImage(int order, List<int> input) {
+    // convert image to image from image package
+
+    imglib.Image image = imglib.decodeJpg(input)!;
+
+    int x = 0, y = 0;
+    int width = (image.width / order).round();
+    int height = (image.height / order).round();
+
+    // split image to parts
+    List<imglib.Image> parts = <imglib.Image>[];
+    for (int i = 0; i < order; i++) {
+      for (int j = 0; j < order; j++) {
+        parts.add(imglib.copyCrop(image, x, y, width, height));
+        x += width;
+      }
+      x = 0;
+      y += height;
+    }
+
+    // convert image from image package to Image Widget to display
+    List<Image> output = <Image>[];
+    for (var img in parts) {
+      output.add(Image.memory(Uint8List.fromList(imglib.encodeJpg(img))));
+    }
+
+    return output;
   }
 
   bool onPointTap(Point point) {
@@ -137,8 +185,7 @@ class SquarePuzzleMatrix with ChangeNotifier {
       if (nextPoint.data == null) {
         // we swap data between nextPoint and point
         swapData(nextPoint, point);
-        //!IMPORTANT nextPoint and point data here will appear the same
-        //! because data is changed in the actual points list
+
         for (var i = pointsWalked.length - 1; i >= 0; i--) {
           swapData(pointsWalked[i], point);
           point = pointsWalked[i];
@@ -157,12 +204,16 @@ class SquarePuzzleMatrix with ChangeNotifier {
   /// but data in [points] list will.
   void swapData(Point point1, Point point2) {
     final tmpData = point2.data;
+    final tmpImage = point2.img;
 
     bool pt1Before = checkPointPosition(point1);
     bool pt2Before = checkPointPosition(point2);
 
     point2.data = point1.data;
+    point2.img = point1.img;
+
     point1.data = tmpData;
+    point1.img = tmpImage;
 
     bool pt1After = checkPointPosition(point1);
     bool pt2After = checkPointPosition(point2);

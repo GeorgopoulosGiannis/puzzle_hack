@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../pages/bloc/puzzle_screen_bloc.dart';
 
 class Moves extends StatelessWidget {
-  final int totalMoves;
-  
   const Moves({
     Key? key,
-    required this.totalMoves,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return  Text(
-      '$totalMoves Moves',
-      style:const TextStyle(
-        fontWeight: FontWeight.bold,
-      ),
+    return BlocBuilder<PuzzleScreenBloc, PuzzleScreenState>(
+      builder: (context, state) {
+        return Text(
+          '${state.totalMoves} Moves',
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        );
+      },
     );
   }
 }

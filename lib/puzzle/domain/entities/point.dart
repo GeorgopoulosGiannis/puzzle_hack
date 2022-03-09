@@ -1,15 +1,13 @@
+import 'package:flutter/widgets.dart';
+
 class Point {
   final int x;
   final int y;
   String? data;
-
-  Point copy() => Point(
-        data: data,
-        x: x,
-        y: y,
-      );
+  Image? img;
 
   Point({
+    required this.img,
     required this.x,
     required this.y,
     required this.data,

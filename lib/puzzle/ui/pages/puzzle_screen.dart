@@ -1,77 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:puzzle_hack/puzzle/domain/entities/is_solvable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:puzzle_hack/puzzle/domain/entities/square_puzzle_matrix.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/correct_tiles.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/moves.dart';
-import 'package:puzzle_hack/puzzle/ui/widgets/puzzle.dart';
-import 'package:puzzle_hack/puzzle/ui/widgets/shuffle_button.dart';
 
-class PuzzleScreen extends StatefulWidget {
+import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_board.dart';
+import 'package:puzzle_hack/puzzle/ui/widgets/shuffle_button.dart';
+import 'package:puzzle_hack/puzzle/ui/widgets/screen_background.dart';
+
+import 'bloc/puzzle_screen_bloc.dart';
+
+class PuzzleScreen extends StatelessWidget {
   const PuzzleScreen({Key? key}) : super(key: key);
 
   @override
-  State<PuzzleScreen> createState() => _PuzzleScreenState();
-}
-
-class _PuzzleScreenState extends State<PuzzleScreen> {
-  late final puzzleMatrix = SquarePuzzleMatrix.generate(4);
-  bool holdingBtn = false;
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFFEFEEEE),
-          ),
-          padding: const EdgeInsets.all(8.0),
-          child: AnimatedBuilder(
-            animation: puzzleMatrix,
-            builder: (ctx, _) => Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+    return BlocProvider(
+      create: (context) => PuzzleScreenBloc()..add(ShuffleEvent()),
+      child: BlocBuilder<PuzzleScreenBloc, PuzzleScreenState>(
+        builder: (context, state) {
+          return Scaffold(
+            body: Stack(
+              fit: StackFit.expand,
               children: [
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                ScreenBackground(
+                  () {
+                    context.read<PuzzleScreenBloc>().add(ShuffleEvent());
+                  },
+                ),
+                AnimatedBuilder(
+                  animation: state.puzzleMatrix,
+                  builder: (ctx, _) => Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TextButton(
-                          onPressed: () {
-                            print(isSolvable(
-                                puzzleMatrix.points.fold<List<int?>>(
-                                    [],
-                                    (prev, cur) => [
-                                          ...prev,
-                                          cur.isBlank
-                                              ? null
-                                              : int.parse(cur.data!)
-                                        ]),
-                                puzzleMatrix.order));
-                          },
-                          child: const Text('check solvability')),
-                      ShuffleButton(
-                        onTap: () async {
-                          puzzleMatrix.shuffle();
-                        },
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ShuffleButton(
+                              onTap: () async {
+                                context.read<PuzzleScreenBloc>().add(ShuffleEvent());
+                              },
+                            ),
+                            const Moves(),
+                            const CorrectTiles(),
+                          ],
+                        ),
                       ),
-                      Moves(
-                        totalMoves: puzzleMatrix.totalMoves,
+                      Center(
+                        child: PuzzleBoard(
+                          matrix: state.puzzleMatrix,
+                        ),
                       ),
-                      CorrectTiles(
-                        puzzleMatrix.correctlyPlacedTiles,
-                      ),
+                      const Spacer(
+                        flex: 1,
+                      )
                     ],
                   ),
                 ),
-                Puzzle(
-                  matrix: puzzleMatrix,
-                ),
-                const Spacer(
-                  flex: 1,
-                )
               ],
             ),
-          )),
+          );
+        },
+      ),
     );
   }
 }
