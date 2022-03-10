@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item_bubble.dart';
+import 'package:puzzle_hack/puzzle/ui/widgets/whirlwind.dart';
 
+import '../pages/bloc/puzzle_screen_bloc.dart';
 import 'liquid_background.dart';
 
 class ScreenBackground extends StatefulWidget {
@@ -31,10 +34,10 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
   late final screenSize = MediaQuery.of(context).size;
 
   List<double> initList(int length) => List.generate(length, (index) => 0);
-
-  late List<double> b = initList(5);
-  late List<double> l = initList(5);
-  late List<double> s = initList(5);
+  int length = 50;
+  late List<double> b = initList(length);
+  late List<double> l = initList(length);
+  late List<double> s = initList(length);
 
   List<double> randomFrugality = [];
 
@@ -80,7 +83,7 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
   void tickBounce() {
     int i = 0;
     timer = Timer.periodic(
-      const Duration(seconds: 1),
+      Duration(milliseconds: 500),
       (timer) {
         i++;
         if (i == s.length) {
@@ -106,23 +109,30 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const Liquid(),
-        for (var i = 0; i < s.length; i++)
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return _RandomBubble(
-                screenSize: screenSize,
-                key: Key('bubble_$i'),
-                endB: b[i],
-                endL: l[i],
-                endS: s[i],
-              );
-            },
-          ),
-      ],
+    return BlocConsumer<PuzzleScreenBloc, PuzzleScreenState>(
+      listener: (context, state) {
+        if (state.isShuffling) {}
+      },
+      builder: (context, state) {
+        return Stack(
+          children: [
+            const Liquid(),
+            for (var i = 0; i < s.length; i++)
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return _RandomBubble(
+                    screenSize: screenSize,
+                    key: Key('bubble_$i'),
+                    endB: b[i],
+                    endL: l[i],
+                    endS: s[i],
+                  );
+                },
+              ),
+          ],
+        );
+      },
     );
   }
 }

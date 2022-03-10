@@ -39,9 +39,11 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
         correctNo: 0,
       ),
     );
-    await state.puzzleMatrix.shuffle();
+    final puzzle = state.puzzleMatrix;
+    await puzzle.shuffle();
     emit(
       state.copyWith(
+        puzzleMatrix: puzzle,
         isShuffling: false,
         correctNo: state.puzzleMatrix.correctlyPlacedTiles,
       ),
@@ -52,10 +54,12 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     PointTapEvent event,
     Emitter<PuzzleScreenState> emit,
   ) {
-    final moved = state.puzzleMatrix.onPointTap(event.point);
+    final puzzle = state.puzzleMatrix;
+    final moved = puzzle.onPointTap(event.point);
     if (moved) {
       emit(
         state.copyWith(
+          puzzleMatrix: puzzle,
           totalMoves: state.puzzleMatrix.totalMoves,
           correctNo: state.puzzleMatrix.correctlyPlacedTiles,
         ),

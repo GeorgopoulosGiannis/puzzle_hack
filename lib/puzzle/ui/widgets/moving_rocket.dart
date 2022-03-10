@@ -7,8 +7,7 @@ class MovingRocket extends StatefulWidget {
   State<MovingRocket> createState() => _MovingRocketState();
 }
 
-class _MovingRocketState extends State<MovingRocket>
-    with SingleTickerProviderStateMixin {
+class _MovingRocketState extends State<MovingRocket> with SingleTickerProviderStateMixin {
   late final controller = AnimationController(
     duration: const Duration(
       seconds: 20,
@@ -151,7 +150,6 @@ class _Rocket extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('a');
     return SlideTransition(
       position: move1,
       child: SlideTransition(

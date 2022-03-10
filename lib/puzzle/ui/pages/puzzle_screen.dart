@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:puzzle_hack/puzzle/domain/entities/square_puzzle_matrix.dart';
+
 import 'package:puzzle_hack/puzzle/ui/widgets/correct_tiles.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/moves.dart';
 

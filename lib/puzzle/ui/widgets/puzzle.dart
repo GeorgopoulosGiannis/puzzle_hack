@@ -4,6 +4,7 @@ import 'package:puzzle_hack/puzzle/domain/entities/point.dart';
 
 import 'package:puzzle_hack/puzzle/domain/entities/square_puzzle_matrix.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item_bubble.dart';
+import 'package:puzzle_hack/puzzle/ui/widgets/whirlwind.dart';
 
 import '../pages/bloc/puzzle_screen_bloc.dart';
 
@@ -25,59 +26,41 @@ class Puzzle extends StatefulWidget {
   State<Puzzle> createState() => _PuzzleState();
 }
 
-class _PuzzleState extends State<Puzzle> with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(vsync: this, duration: Duration(seconds: 5));
-  late final _turnAnimation = Tween<double>(begin: 0, end: 5).animate(
-    CurvedAnimation(
-      parent: _controller,
-      curve: Curves.linear,
-    ),
-  );
-
+class _PuzzleState extends State<Puzzle> {
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<PuzzleScreenBloc, PuzzleScreenState>(
-      listener: (context, state) {
-        if (state.isShuffling && !_controller.isAnimating) {
-          _controller.forward();
-        }
-        if (!state.isShuffling && _controller.isAnimating) {
-          _controller.reset();
-        }
-      },
-      builder: (context, state) {
-        return RotationTransition(
-          turns: _turnAnimation,
-          child: Stack(
-            children: widget.matrix.points.map(
-              (e) {
-                final data = e.data;
-                return AnimatedAlign(
-                  curve: Curves.easeInOut,
-                  key: Key(
-                    data.toString(),
+    return BlocSelector<PuzzleScreenBloc, PuzzleScreenState, bool>(
+      selector: (state) => state.isShuffling,
+      builder: (context, shuffling) {
+        return Stack(
+          children: widget.matrix.points.map(
+            (e) {
+              final data = e.data;
+              return AnimatedAlign(
+                curve: Curves.easeInOut,
+                key: Key(
+                  data.toString(),
+                ),
+                alignment: FractionalOffset(
+                  shuffling ? -1 : ((e.x) / (widget.matrix.order - 1)),
+                  shuffling ? 1.5 : (e.y) / (widget.matrix.order - 1),
+                ),
+                duration: const Duration(seconds: 1),
+                child: SizedBox(
+                  height: widget.itemHeight,
+                  width: widget.itemWidth,
+                  child: PuzzleItemBubble(
+                    p: e,
+                    onPointTap: data != null
+                        ? () {
+                            widget.onPointTap(e);
+                          }
+                        : null,
                   ),
-                  alignment: FractionalOffset(
-                    ((e.x) / (widget.matrix.order - 1)),
-                    (e.y) / (widget.matrix.order - 1),
-                  ),
-                  duration: const Duration(milliseconds: 400),
-                  child: SizedBox(
-                    height: widget.itemHeight,
-                    width: widget.itemWidth,
-                    child: PuzzleItemBubble(
-                      p: e,
-                      onPointTap: data != null
-                          ? () {
-                              widget.onPointTap(e);
-                            }
-                          : null,
-                    ),
-                  ),
-                );
-              },
-            ).toList(),
-          ),
+                ),
+              );
+            },
+          ).toList(),
         );
       },
     );
