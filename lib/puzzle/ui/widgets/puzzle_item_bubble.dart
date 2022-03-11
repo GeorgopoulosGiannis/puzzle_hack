@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vector_math/vector_math.dart' as vector_math;
 
 import '../../domain/entities/point.dart';
+import '../pages/bloc/puzzle_screen_bloc.dart';
 
 const borderColor = Color.fromARGB(255, 0, 129, 146); // Color.fromARGB(255, 97, 160, 233);
 const fillColor = Color(0xff00bcd4); // Color.fromARGB(255, 139, 203, 255);
@@ -20,28 +22,38 @@ class PuzzleItemBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return p.isBlank
         ? const SizedBox.shrink()
-        : GestureDetector(
-            onTap: onPointTap,
-            child: CustomPaint(
-              painter: BackgroundBubble(),
-              foregroundPainter: BubblePainter(),
-              child: Center(
-                child: Text(
-                  p.data!,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        color: Color.fromARGB(255, 94, 173, 238),
-                        blurRadius: 10,
-                      )
-                    ],
+        : BlocSelector<PuzzleScreenBloc, PuzzleScreenState, bool>(
+            selector: (state) {
+              return state.isPlaying;
+            },
+            builder: (context, playing) {
+              return MouseRegion(
+                cursor: playing ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
+                child: GestureDetector(
+                  onTap: onPointTap,
+                  child: CustomPaint(
+                    painter: BackgroundBubble(),
+                    foregroundPainter: BubblePainter(),
+                    child: Center(
+                      child: Text(
+                        p.data!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              color: Color.fromARGB(255, 94, 173, 238),
+                              blurRadius: 10,
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           );
   }
 }

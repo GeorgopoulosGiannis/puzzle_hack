@@ -29,9 +29,8 @@ class Puzzle extends StatefulWidget {
 class _PuzzleState extends State<Puzzle> {
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<PuzzleScreenBloc, PuzzleScreenState, bool>(
-      selector: (state) => state.isShuffling,
-      builder: (context, shuffling) {
+    return BlocBuilder<PuzzleScreenBloc, PuzzleScreenState>(
+      builder: (context, state) {
         return Stack(
           children: widget.matrix.points.map(
             (e) {
@@ -42,10 +41,10 @@ class _PuzzleState extends State<Puzzle> {
                   data.toString(),
                 ),
                 alignment: FractionalOffset(
-                  shuffling ? -1 : ((e.x) / (widget.matrix.order - 1)),
-                  shuffling ? 1.5 : (e.y) / (widget.matrix.order - 1),
+                  state.isShuffling ? -1 : ((e.x) / (widget.matrix.order - 1)),
+                  state.isShuffling ? 1.5 : (e.y) / (widget.matrix.order - 1),
                 ),
-                duration: const Duration(seconds: 1),
+                duration: state.isPlaying ? const Duration(milliseconds: 400) : const Duration(seconds: 1),
                 child: SizedBox(
                   height: widget.itemHeight,
                   width: widget.itemWidth,

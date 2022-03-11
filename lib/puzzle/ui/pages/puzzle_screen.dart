@@ -8,6 +8,7 @@ import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_board.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/shuffle_button.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/screen_background.dart';
 
+import '../widgets/seconds_counter.dart';
 import 'bloc/puzzle_screen_bloc.dart';
 
 class PuzzleScreen extends StatelessWidget {
@@ -38,6 +39,7 @@ class PuzzleScreen extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            const SecondsCounter(),
                             ShuffleButton(
                               onTap: () async {
                                 context.read<PuzzleScreenBloc>().add(ShuffleEvent());
