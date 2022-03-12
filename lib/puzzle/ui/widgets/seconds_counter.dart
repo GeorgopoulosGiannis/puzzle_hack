@@ -14,7 +14,7 @@ class SecondsCounter extends StatefulWidget {
 
 class _SecondsCounterState extends State<SecondsCounter> {
   Timer? timer;
-  int curSecond = 0;
+  int curSecond = -1;
 
   @override
   void dispose() {
@@ -29,7 +29,7 @@ class _SecondsCounterState extends State<SecondsCounter> {
       listener: (context, state) {
         timer = Timer.periodic(const Duration(seconds: 1), (timer) {
           curSecond = 4 - timer.tick;
-          if (curSecond == 0) {
+          if (curSecond == -1) {
             timer.cancel();
             context.read<PuzzleScreenBloc>().add(StartPlayingEvent());
           }
@@ -37,15 +37,16 @@ class _SecondsCounterState extends State<SecondsCounter> {
         });
       },
       builder: (context, state) {
-        final isVisible = curSecond > 0;
+        final isVisible = curSecond >= 0;
+        final text = curSecond == 0 ? 'GO!' : curSecond.toString();
         return AnimatedSwitcher(
-          duration: const Duration(milliseconds: 800),
+          duration: const Duration(milliseconds: 700),
           child: Text(
-            curSecond.toString(),
+            text,
             key: Key(curSecond.toString()),
             style: TextStyle(
               color: isVisible ? Colors.white : Colors.transparent,
-              fontSize: 100,
+              fontSize: 150,
               fontWeight: FontWeight.bold,
               shadows: isVisible
                   ? const [
