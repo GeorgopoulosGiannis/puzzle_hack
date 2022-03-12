@@ -1,5 +1,7 @@
+import 'package:dough/dough.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:vector_math/vector_math.dart' as vector_math;
 
 import '../../domain/entities/point.dart';
@@ -9,34 +11,41 @@ const borderColor = Color.fromARGB(255, 0, 129, 146); // Color.fromARGB(255, 97,
 const fillColor = Color(0xff00bcd4); // Color.fromARGB(255, 139, 203, 255);
 const dotColor = Colors.white;
 
-class PuzzleItemBubble extends StatelessWidget {
+class PuzzleItemBubble extends StatefulWidget {
   final Point p;
-  final VoidCallback? onPointTap;
+
   const PuzzleItemBubble({
     Key? key,
     required this.p,
-    required this.onPointTap,
   }) : super(key: key);
 
   @override
+  State<PuzzleItemBubble> createState() => _PuzzleItemBubbleState();
+}
+
+class _PuzzleItemBubbleState extends State<PuzzleItemBubble> {
+  final cnt = DoughController();
+  @override
   Widget build(BuildContext context) {
-    return p.isBlank
+    return widget.p.isBlank
         ? const SizedBox.shrink()
         : BlocSelector<PuzzleScreenBloc, PuzzleScreenState, bool>(
-            selector: (state) {
-              return state.isPlaying;
-            },
+            selector: (state) => state.isPlaying,
             builder: (context, playing) {
               return MouseRegion(
-                cursor: playing ? SystemMouseCursors.click : SystemMouseCursors.forbidden,
-                child: GestureDetector(
-                  onTap: onPointTap,
+                cursor: playing ? SystemMouseCursors.grab : SystemMouseCursors.forbidden,
+                child: PressableDough(
+                  onStart: () {
+                    if (playing) {
+                      context.read<PuzzleScreenBloc>().add(PointTapEvent(widget.p));
+                    }
+                  },
                   child: CustomPaint(
                     painter: BackgroundBubble(),
                     foregroundPainter: BubblePainter(),
                     child: Center(
                       child: Text(
-                        p.data!,
+                        widget.p.data!,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 30,

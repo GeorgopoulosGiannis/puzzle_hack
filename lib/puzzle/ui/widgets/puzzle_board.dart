@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:puzzle_hack/puzzle/domain/entities/square_puzzle_matrix.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle.dart';
-
-import '../pages/bloc/puzzle_screen_bloc.dart';
 
 abstract class _SizeConstants {
   static const extraMargin = 10;
@@ -34,9 +31,6 @@ class _PuzzleBoardState extends State<PuzzleBoard> {
       height: height + _SizeConstants.extraMargin * 2,
       width: width + _SizeConstants.extraMargin * 2,
       child: Puzzle(
-        onPointTap: (data) {
-          context.read<PuzzleScreenBloc>().add(PointTapEvent(data));
-        },
         matrix: widget.matrix,
         itemWidth: _itemWidth,
         itemHeight: _itemHeight,

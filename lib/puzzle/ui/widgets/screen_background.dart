@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item_bubble.dart';
-import 'package:puzzle_hack/puzzle/ui/widgets/whirlwind.dart';
 
 import '../pages/bloc/puzzle_screen_bloc.dart';
 import 'liquid_background.dart';
@@ -54,44 +53,19 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
     super.dispose();
   }
 
-  Future<void> explode() async {
-    const newlength = 50;
-    b = initList(newlength);
-    l = initList(newlength);
-    s = initList(newlength);
-
-    setState(() {});
-    Future.delayed(const Duration(milliseconds: 400)).then(
-      (value) {
-        for (var i = 0; i < s.length / 2; i++) {
-          b[i] = rng.nextInt(screenSize.height.toInt()).toDouble();
-
-          l[i] = rng.nextInt(screenSize.width.toInt()).toDouble();
-          s[i] = rng.nextInt(70).toDouble();
-        }
-
-        setState(() {});
-      },
-    );
-    Future.delayed(const Duration(seconds: 4)).then(
-      (value) => reset(),
-    );
-  }
-
   Timer? timer;
 
   void tickBounce() {
     int i = 0;
     timer = Timer.periodic(
-      Duration(milliseconds: 500),
+      const Duration(milliseconds: 500),
       (timer) {
         i++;
         if (i == s.length) {
           i = 0;
-          reset();
         }
 
-        b[i] = screenSize.height + 40;
+        b[i] = rng.nextInt(screenSize.height.toInt()).toDouble();
         l[i] = rng.nextInt(screenSize.width.toInt()).toDouble();
         s[i] = rng.nextInt(70).toDouble();
 
@@ -100,21 +74,9 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
     );
   }
 
-  void reset() {
-    b = initList(s.length);
-    l = initList(s.length);
-    s = initList(s.length);
-    setState(() {});
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<PuzzleScreenBloc, PuzzleScreenState>(
-      listener: (context, state) {
-        if (state.isShuffling) {}
-      },
-      builder: (context, state) {
-        return Stack(
+  Widget build(BuildContext context) => BlocBuilder<PuzzleScreenBloc, PuzzleScreenState>(
+        builder: (context, state) => Stack(
           children: [
             const Liquid(),
             for (var i = 0; i < s.length; i++)
@@ -122,51 +84,93 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
                 animation: _controller,
                 builder: (context, child) {
                   return _RandomBubble(
-                    screenSize: screenSize,
-                    key: Key('bubble_$i'),
-                    endB: b[i],
-                    endL: l[i],
-                    endS: s[i],
-                  );
+                      screenSize: screenSize,
+                      key: Key('bubble_$i'),
+                      endB: b[i],
+                      endL: l[i],
+                      endS: s[i],
+                      cb: () {
+                        b[i] = 0;
+                        l[i] = 0;
+                        s[i] = 0;
+                      });
                 },
               ),
           ],
-        );
-      },
-    );
-  }
+        ),
+      );
 }
 
-class _RandomBubble extends StatelessWidget {
+class _RandomBubble extends StatefulWidget {
   final Size screenSize;
   final double endB;
   final double endL;
   final double endS;
+  final VoidCallback cb;
 
   const _RandomBubble({
     Key? key,
+    required this.cb,
     required this.screenSize,
     required this.endB,
     required this.endL,
     required this.endS,
   }) : super(key: key);
 
+  @override
+  State<_RandomBubble> createState() => _RandomBubbleState();
+}
+
+class _RandomBubbleState extends State<_RandomBubble> with SingleTickerProviderStateMixin {
+  late AnimationController controller = AnimationController(
+    vsync: this,
+    duration: const Duration(
+      milliseconds: 350,
+    ),
+  )..addStatusListener(
+      (status) {
+        if (status == AnimationStatus.completed) {
+          showSplash = false;
+          widget.cb();
+        }
+      },
+    );
+
+  bool showSplash = false;
+
   Widget _buildPositioned() {
     return AnimatedPositioned(
-        curve: Curves.decelerate,
-        duration: const Duration(seconds: 4),
-        bottom: endB,
-        left: endL,
-        child: endS > 0
-            ? SizedBox(
-                height: endS,
-                width: endS,
-                child: CustomPaint(
-                  painter: BackgroundBubble(),
-                  foregroundPainter: BubblePainter(),
+      onEnd: () {
+        if (controller.isCompleted) {
+          controller.reset();
+        }
+        if (widget.endB > 0) {
+          showSplash = true;
+          controller.forward();
+        }
+      },
+      curve: Curves.decelerate,
+      duration: const Duration(seconds: 4),
+      bottom: widget.endB,
+      left: widget.endL,
+      child: showSplash
+          ? Splash(
+              left: widget.endL,
+              bottom: widget.endB,
+              radius: widget.endS,
+              controller: controller,
+            )
+          : widget.endS == 0
+              ? const SizedBox.shrink()
+              : SizedBox(
+                  height: widget.endS,
+                  width: widget.endS,
+                  child: CustomPaint(
+                    painter: BackgroundBubble(),
+                    foregroundPainter: BubblePainter(),
+                  ),
                 ),
-              )
-            : const SizedBox.shrink());
+    );
   }
 
   @override
@@ -179,5 +183,83 @@ class _RandomBubble extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class Splash extends StatelessWidget {
+  final double radius;
+  final double bottom;
+  final double left;
+  final AnimationController controller;
+
+  Splash({
+    Key? key,
+    required this.radius,
+    required this.bottom,
+    required this.left,
+    required this.controller,
+  }) : super(key: key);
+
+  late final radiusTween = Tween<double>(
+    begin: 0,
+    end: radius,
+  );
+  final Tween<double> borderWidthTween = Tween<double>(
+    begin: 25,
+    end: 1,
+  );
+  late final Animation<double> radiusAnimation = radiusTween.animate(
+    CurvedAnimation(
+      curve: Curves.ease,
+      parent: controller,
+    ),
+  );
+  late final Animation<double> borderWidthAnimation = borderWidthTween.animate(
+    CurvedAnimation(
+      curve: Curves.fastOutSlowIn,
+      parent: controller,
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+        animation: controller,
+        builder: (context, _) {
+          return CustomPaint(
+            foregroundPainter: _Splash(
+              radius: radiusAnimation.value,
+              borderWidth: borderWidthAnimation.value,
+              color: Colors.white,
+            ),
+          );
+        });
+  }
+}
+
+class _Splash extends CustomPainter {
+  _Splash({
+    required this.radius,
+    required this.borderWidth,
+    required this.color,
+  }) : blackPaint = Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = borderWidth;
+
+  final double radius;
+  final double borderWidth;
+
+  final Color color;
+  final Paint blackPaint;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawCircle(Offset.zero, radius, blackPaint);
+  }
+
+  @override
+  bool shouldRepaint(_Splash oldDelegate) {
+    return oldDelegate.radius != radius || oldDelegate.borderWidth != borderWidth;
   }
 }
