@@ -14,7 +14,6 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
   PuzzleScreenBloc()
       : super(
           PuzzleScreenState(
-            secondsToGo: 0,
             isPlaying: false,
             correctNo: 0,
             totalMoves: 0,

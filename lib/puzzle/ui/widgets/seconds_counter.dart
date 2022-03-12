@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,38 +12,37 @@ class SecondsCounter extends StatefulWidget {
   State<SecondsCounter> createState() => _SecondsCounterState();
 }
 
-class _SecondsCounterState extends State<SecondsCounter> with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(
-    vsync: this,
-    duration: Duration(
-      milliseconds: 900,
-    ),
-  );
-  late final _opacity = Tween<double>(begin: 0.2, end: 1).animate(CurvedAnimation(
-    parent: _controller,
-    curve: Curves.easeInOut,
-  ));
+class _SecondsCounterState extends State<SecondsCounter> {
+  Timer? timer;
+  int curSecond = 0;
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PuzzleScreenBloc, PuzzleScreenState>(
-      listenWhen: (previous, current) =>
-          (previous.secondsToGo == 0 && current.secondsToGo > 0) ||
-          (previous.secondsToGo > 0 && current.secondsToGo == 0),
+      listenWhen: (previous, current) => (!previous.isShuffling && current.isShuffling),
       listener: (context, state) {
-        if (state.secondsToGo == 0) {
-          _controller.reset();
-        } else if (!_controller.isAnimating) {
-          _controller.forward();
-        }
+        timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          curSecond = 4 - timer.tick;
+          if (curSecond == 0) {
+            timer.cancel();
+            context.read<PuzzleScreenBloc>().add(StartPlayingEvent());
+          }
+          setState(() {});
+        });
       },
       builder: (context, state) {
-        final isVisible = state.secondsToGo > 0;
+        final isVisible = curSecond > 0;
         return AnimatedSwitcher(
-          duration: Duration(milliseconds: 800),
+          duration: const Duration(milliseconds: 800),
           child: Text(
-            state.secondsToGo.toString(),
-            key: Key(state.secondsToGo.toString()),
+            curSecond.toString(),
+            key: Key(curSecond.toString()),
             style: TextStyle(
               color: isVisible ? Colors.white : Colors.transparent,
               fontSize: 100,
