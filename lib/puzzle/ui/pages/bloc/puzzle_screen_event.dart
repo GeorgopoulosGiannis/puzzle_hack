@@ -11,12 +11,4 @@ class PointTapEvent extends PuzzleScreenEvent {
   PointTapEvent(this.point);
 }
 
-class StartCountdownEvent extends PuzzleScreenEvent {}
-
 class StartPlayingEvent extends PuzzleScreenEvent {}
-
-class NewSecondsEvent extends PuzzleScreenEvent {
-  final int second;
-
-  NewSecondsEvent(this.second);
-}

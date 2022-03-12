@@ -18,7 +18,7 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
             isPlaying: false,
             correctNo: 0,
             totalMoves: 0,
-            isShuffling: true,
+            isShuffling: false,
             puzzleMatrix: SquarePuzzleMatrix.generate(4),
           ),
         ) {
@@ -28,9 +28,7 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
   void _registerEvents() {
     on<ShuffleEvent>(_onShuffleEvent);
     on<PointTapEvent>(_onPointTapEvent);
-    on<StartCountdownEvent>(_onStartCountdownEvent);
     on<StartPlayingEvent>(_onStartPlayingEvent);
-    on<NewSecondsEvent>(_onNewSecondsEvent);
   }
 
   FutureOr<void> _onShuffleEvent(
@@ -54,7 +52,6 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
         correctNo: state.puzzleMatrix.correctlyPlacedTiles,
       ),
     );
-    add(StartCountdownEvent());
   }
 
   FutureOr<void> _onPointTapEvent(
@@ -74,30 +71,6 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     }
   }
 
-  FutureOr<void> _onStartCountdownEvent(
-    StartCountdownEvent event,
-    Emitter<PuzzleScreenState> emit,
-  ) {
-    final stopwatch = Stopwatch()..start();
-
-    Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (state.isShuffling) {
-          timer.cancel();
-          add(NewSecondsEvent(0));
-        }
-        if (stopwatch.elapsed.inSeconds == 4) {
-          add(StartPlayingEvent());
-
-          timer.cancel();
-        } else {
-          add(NewSecondsEvent(4 - stopwatch.elapsed.inSeconds));
-        }
-      },
-    );
-  }
-
   FutureOr<void> _onStartPlayingEvent(
     StartPlayingEvent event,
     Emitter<PuzzleScreenState> emit,
@@ -105,14 +78,6 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     emit(
       state.copyWith(
         isPlaying: true,
-      ),
-    );
-  }
-
-  FutureOr<void> _onNewSecondsEvent(NewSecondsEvent event, Emitter<PuzzleScreenState> emit) {
-    emit(
-      state.copyWith(
-        secondsToGo: event.second,
       ),
     );
   }

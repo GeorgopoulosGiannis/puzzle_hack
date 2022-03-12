@@ -206,30 +206,11 @@ class SquarePuzzleMatrix with ChangeNotifier {
     final tmpData = point2.data;
     final tmpImage = point2.img;
 
-    bool pt1Before = checkPointPosition(point1);
-    bool pt2Before = checkPointPosition(point2);
-
     point2.data = point1.data;
     point2.img = point1.img;
 
     point1.data = tmpData;
     point1.img = tmpImage;
-
-    bool pt1After = checkPointPosition(point1);
-    bool pt2After = checkPointPosition(point2);
-
-    if (pt1Before && !pt1After) {
-      correctlyPlacedTiles--;
-    }
-    if (!pt1Before && pt1After) {
-      correctlyPlacedTiles++;
-    }
-    if (pt2Before && !pt2After) {
-      correctlyPlacedTiles--;
-    }
-    if (!pt2Before && pt2After) {
-      correctlyPlacedTiles++;
-    }
   }
 
   bool checkPointPosition(Point point) {

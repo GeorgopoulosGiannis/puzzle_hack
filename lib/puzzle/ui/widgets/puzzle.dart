@@ -41,8 +41,8 @@ class _PuzzleState extends State<Puzzle> {
                   data.toString(),
                 ),
                 alignment: FractionalOffset(
-                  state.isShuffling ? -1 : ((e.x) / (widget.matrix.order - 1)),
-                  state.isShuffling ? 1.5 : (e.y) / (widget.matrix.order - 1),
+                  state.isShuffling ? -1 : ((e.y) / (widget.matrix.order - 1)),
+                  state.isShuffling ? 1.5 : (e.x) / (widget.matrix.order - 1),
                 ),
                 duration: state.isPlaying ? const Duration(milliseconds: 400) : const Duration(seconds: 1),
                 child: SizedBox(

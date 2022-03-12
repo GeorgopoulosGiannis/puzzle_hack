@@ -17,7 +17,7 @@ class PuzzleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => PuzzleScreenBloc()..add(ShuffleEvent()),
+      create: (context) => PuzzleScreenBloc(), //..add(ShuffleEvent()),
       child: BlocBuilder<PuzzleScreenBloc, PuzzleScreenState>(
         builder: (context, state) {
           return Scaffold(
