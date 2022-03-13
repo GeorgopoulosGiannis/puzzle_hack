@@ -38,6 +38,7 @@ dependencies:
   equatable: ^2.0.3
   dough: ^1.0.2
   just_audio: ^0.9.20
+  confetti: ^0.6.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

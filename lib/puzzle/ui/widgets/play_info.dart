@@ -14,6 +14,7 @@ class PlayInfo extends StatelessWidget {
       selector: (state) => {
         'tiles': state.correctNo.toString(),
         'moves': state.totalMoves.toString(),
+        'timePassed': state.timePassed,
       },
       builder: (context, map) {
         return Column(
@@ -24,6 +25,9 @@ class PlayInfo extends StatelessWidget {
             ),
             InfoEntry(
               text: '${map['tiles']} Tiles',
+            ),
+            InfoEntry(
+              text: '${map['timePassed']}',
             ),
           ],
         );

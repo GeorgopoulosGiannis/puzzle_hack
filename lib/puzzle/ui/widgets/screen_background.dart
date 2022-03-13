@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item_bubble.dart';
+import '../pages/bloc/puzzle_screen_bloc.dart';
 import 'liquid_background.dart';
 import 'splash.dart';
 
@@ -18,6 +21,7 @@ class ScreenBackground extends StatefulWidget {
 }
 
 class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerProviderStateMixin {
+  late final ConfettiController _conffetiController = ConfettiController(duration: const Duration(seconds: 10));
   final rng = Random();
 
   late final _controller = AnimationController(
@@ -45,6 +49,7 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
 
   @override
   void dispose() {
+    _conffetiController.dispose();
     _controller.dispose();
     timer?.cancel();
     super.dispose();
@@ -72,27 +77,51 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
   }
 
   @override
-  Widget build(BuildContext context) => Stack(
-        children: [
-          const Liquid(),
-          for (var i = 0; i < s.length; i++)
-            AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return _RandomBubble(
-                    screenSize: screenSize,
-                    key: Key('bubble_$i'),
-                    endB: b[i],
-                    endL: l[i],
-                    endS: s[i],
-                    cb: () {
-                      b[i] = 0;
-                      l[i] = 0;
-                      s[i] = 0;
-                    });
-              },
+  Widget build(BuildContext context) => BlocListener<PuzzleScreenBloc, PuzzleScreenState>(
+        listenWhen: (previous, current) =>
+            (!previous.isCompleted && current.isCompleted) || previous.isCompleted && !current.isCompleted,
+        listener: (context, state) {
+          if (state.isCompleted) {
+            _conffetiController.play();
+          } else {
+            _conffetiController.stop();
+          }
+        },
+        child: Stack(
+          children: [
+            const Liquid(),
+            Align(
+              alignment: Alignment.topRight,
+              child: ConfettiWidget(
+                confettiController: _conffetiController,
+                blastDirection: pi, // radial value - LEFT
+                particleDrag: 0.01, // apply drag to the confetti
+                emissionFrequency: 0.05, // how often it should emit
+                numberOfParticles: 20, // number of particles to emit
+                gravity: 0.05, // gravity - or fall speed
+                shouldLoop: true,
+                colors: const [Colors.green, Colors.blue, Colors.pink], // manually specify the colors to be used
+              ),
             ),
-        ],
+            for (var i = 0; i < s.length; i++)
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return _RandomBubble(
+                      screenSize: screenSize,
+                      key: Key('bubble_$i'),
+                      endB: b[i],
+                      endL: l[i],
+                      endS: s[i],
+                      cb: () {
+                        b[i] = 0;
+                        l[i] = 0;
+                        s[i] = 0;
+                      });
+                },
+              ),
+          ],
+        ),
       );
 }
 

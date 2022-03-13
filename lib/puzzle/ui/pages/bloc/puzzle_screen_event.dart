@@ -12,3 +12,9 @@ class PointTapEvent extends PuzzleScreenEvent {
 }
 
 class StartPlayingEvent extends PuzzleScreenEvent {}
+
+class StartStopWatch extends PuzzleScreenEvent {}
+
+class StopStopWatch extends PuzzleScreenEvent {}
+
+class StopwatchTickEvent extends PuzzleScreenEvent {}

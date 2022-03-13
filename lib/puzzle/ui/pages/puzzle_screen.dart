@@ -9,6 +9,7 @@ import 'package:puzzle_hack/puzzle/ui/widgets/shuffle_button.dart';
 import 'package:puzzle_hack/puzzle/ui/widgets/screen_background.dart';
 
 import '../widgets/seconds_counter.dart';
+
 import 'bloc/puzzle_screen_bloc.dart';
 
 class PuzzleScreen extends StatelessWidget {
@@ -37,36 +38,57 @@ class PuzzleScreen extends StatelessWidget {
                     );
                   },
                 ),
-                AnimatedBuilder(
-                  animation: matrix,
-                  builder: (ctx, _) => Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ShuffleButton(
-                              onTap: () async {
-                                context.read<PuzzleScreenBloc>().add(ShuffleEvent());
-                              },
-                            ),
-                            const PlayInfo(),
-                          ],
-                        ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          ShuffleButton(),
+                          PlayInfo(),
+                        ],
                       ),
-                      Center(
+                    ),
+                    AnimatedBuilder(
+                      animation: matrix,
+                      builder: (ctx, _) => Center(
                         child: PuzzleBoard(
                           matrix: matrix,
                         ),
                       ),
-                      const Spacer(
-                        flex: 1,
-                      )
-                    ],
-                  ),
+                    ),
+                    const Spacer(
+                      flex: 1,
+                    )
+                  ],
                 ),
+                BlocSelector<PuzzleScreenBloc, PuzzleScreenState, bool>(
+                  selector: (state) => state.isCompleted,
+                  builder: (context, completed) {
+                    return AnimatedSwitcher(
+                      duration: const Duration(seconds: 2),
+                      child: !completed
+                          ? const SizedBox.shrink()
+                          : const Center(
+                              child: Text(
+                                'Congratulations!',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 100,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.white,
+                                      blurRadius: 10,
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                    );
+                  },
+                )
               ],
             ),
           );

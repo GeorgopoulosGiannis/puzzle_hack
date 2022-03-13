@@ -24,6 +24,11 @@ class _SecondsCounterState extends State<SecondsCounter> {
     player.play();
   }
 
+  Future<void> playStartAudio() async {
+    await player.setFilePath('assets/audio/start.mp3');
+    player.play();
+  }
+
   @override
   void dispose() {
     timer?.cancel();
@@ -43,6 +48,8 @@ class _SecondsCounterState extends State<SecondsCounter> {
             player.stop();
             timer.cancel();
             context.read<PuzzleScreenBloc>().add(StartPlayingEvent());
+          } else if (curSecond == 0) {
+            playStartAudio();
           } else {
             playAudio();
           }
@@ -55,6 +62,13 @@ class _SecondsCounterState extends State<SecondsCounter> {
         final text = curSecond == 0 ? 'GO!' : curSecond.toString();
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 700),
+          transitionBuilder: (Widget child, Animation<double> animation) => FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: animation,
+              child: child,
+            ),
+          ),
           child: Text(
             text,
             key: Key(curSecond.toString()),

@@ -4,10 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../pages/bloc/puzzle_screen_bloc.dart';
 
 class ShuffleButton extends StatelessWidget {
-  final VoidCallback? onTap;
   const ShuffleButton({
     Key? key,
-    this.onTap,
   }) : super(key: key);
 
   @override
@@ -41,19 +39,33 @@ class ShuffleButton extends StatelessWidget {
                 },
               ),
             ),
-            onPressed: !isPlaying ? null : onTap,
-            icon: const Icon(
-              Icons.shuffle,
-              color: Colors.white,
-              size: 30,
+            onPressed: !isPlaying
+                ? null
+                : () => context.read<PuzzleScreenBloc>().add(
+                      ShuffleEvent(),
+                    ),
+            icon: BlocSelector<PuzzleScreenBloc, PuzzleScreenState, bool>(
+              selector: (state) => state.isCompleted,
+              builder: (context, completed) {
+                return Icon(
+                  completed ? Icons.replay : Icons.shuffle,
+                  color: Colors.white,
+                  size: 30,
+                );
+              },
             ),
-            label: const Text(
-              'Shuffle',
-              style: TextStyle(
-                fontSize: 21,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            label: BlocSelector<PuzzleScreenBloc, PuzzleScreenState, bool>(
+              selector: (state) => state.isCompleted,
+              builder: (context, completed) {
+                return Text(
+                  completed ? 'Replay' : 'Shuffle',
+                  style: const TextStyle(
+                    fontSize: 21,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              },
             ),
           );
         },
