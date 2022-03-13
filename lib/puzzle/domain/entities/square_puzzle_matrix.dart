@@ -1,7 +1,6 @@
 import 'dart:developer' as developer;
 import 'dart:math';
-import 'dart:typed_data';
-import 'package:image/image.dart' as imglib;
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:puzzle_hack/puzzle/domain/entities/is_solvable.dart';
@@ -95,60 +94,6 @@ class SquarePuzzleMatrix with ChangeNotifier {
     points = tmpPoints.cast<Point>();
 
     correctlyPlacedTiles = points.length;
-  }
-  SquarePuzzleMatrix.generateFromImage(this.order, List<int> input) {
-    final total = order * order;
-    final tmpPoints = List<Point?>.generate(order * order, (index) => null);
-    final imgParts = splitImage(order, input);
-    for (var i = 0; i < order; i++) {
-      for (var j = 0; j < order; j++) {
-        final index = (i * order) + j;
-        final data = index == total - 1 ? null : (index + 1).toString();
-
-        developer.log('[i][j] : [$i],[$j] ----> data:$data');
-        final point = Point(
-          img: imgParts[index],
-          x: i,
-          y: j,
-          data: data,
-        );
-
-        tmpPoints[index] = point;
-      }
-    }
-
-    points = tmpPoints.cast<Point>();
-
-    correctlyPlacedTiles = points.length - 1;
-  }
-
-  List<Image> splitImage(int order, List<int> input) {
-    // convert image to image from image package
-
-    imglib.Image image = imglib.decodeJpg(input)!;
-
-    int x = 0, y = 0;
-    int width = (image.width / order).round();
-    int height = (image.height / order).round();
-
-    // split image to parts
-    List<imglib.Image> parts = <imglib.Image>[];
-    for (int i = 0; i < order; i++) {
-      for (int j = 0; j < order; j++) {
-        parts.add(imglib.copyCrop(image, x, y, width, height));
-        x += width;
-      }
-      x = 0;
-      y += height;
-    }
-
-    // convert image from image package to Image Widget to display
-    List<Image> output = <Image>[];
-    for (var img in parts) {
-      output.add(Image.memory(Uint8List.fromList(imglib.encodeJpg(img))));
-    }
-
-    return output;
   }
 
   bool onPointTap(Point point) {
