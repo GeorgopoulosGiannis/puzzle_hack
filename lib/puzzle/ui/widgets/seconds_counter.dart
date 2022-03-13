@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:just_audio/just_audio.dart';
+
+import 'package:puzzle_hack/core/audio/bloc/audio_player_bloc.dart';
+import 'package:puzzle_hack/core/widgets/responsive_layout_builder.dart';
 
 import '../pages/bloc/puzzle_screen_bloc.dart';
 
@@ -17,16 +19,12 @@ class _SecondsCounterState extends State<SecondsCounter> {
   Timer? timer;
   int curSecond = -1;
 
-  final AudioPlayer player = AudioPlayer();
-
   Future<void> playAudio() async {
-    await player.setFilePath('assets/audio/click.mp3');
-    player.play();
+    context.read<AudioPlayerBloc>().add(PlayTickEvent());
   }
 
   Future<void> playStartAudio() async {
-    await player.setFilePath('assets/audio/start.mp3');
-    player.play();
+    context.read<AudioPlayerBloc>().add(PlayGoEvent());
   }
 
   @override
@@ -41,11 +39,11 @@ class _SecondsCounterState extends State<SecondsCounter> {
     return BlocConsumer<PuzzleScreenBloc, PuzzleScreenState>(
       listenWhen: (previous, current) => (!previous.isShuffling && current.isShuffling),
       listener: (context, state) {
-        timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+        timer = Timer.periodic(const Duration(seconds: 1), (timer) {
           curSecond = 4 - timer.tick;
-
           if (curSecond == -1) {
-            player.stop();
+            context.read<AudioPlayerBloc>().add(StopEvent());
+
             timer.cancel();
             context.read<PuzzleScreenBloc>().add(StartPlayingEvent());
           } else if (curSecond == 0) {
@@ -53,7 +51,6 @@ class _SecondsCounterState extends State<SecondsCounter> {
           } else {
             playAudio();
           }
-
           setState(() {});
         });
       },
@@ -69,21 +66,57 @@ class _SecondsCounterState extends State<SecondsCounter> {
               child: child,
             ),
           ),
-          child: Text(
-            text,
-            key: Key(curSecond.toString()),
-            style: TextStyle(
-              color: isVisible ? Colors.white : Colors.transparent,
-              fontSize: 150,
-              fontWeight: FontWeight.bold,
-              shadows: isVisible
-                  ? const [
-                      Shadow(
-                        color: Colors.white,
-                        blurRadius: 8,
-                      ),
-                    ]
-                  : null,
+          child: ResponsiveLayoutBuilder(
+            small: (context, child) => Text(
+              text,
+              key: Key(curSecond.toString()),
+              style: TextStyle(
+                color: isVisible ? Colors.white : Colors.transparent,
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                shadows: isVisible
+                    ? const [
+                        Shadow(
+                          color: Colors.white,
+                          blurRadius: 8,
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
+            medium: (context, child) => Text(
+              text,
+              key: Key(curSecond.toString()),
+              style: TextStyle(
+                color: isVisible ? Colors.white : Colors.transparent,
+                fontSize: 60,
+                fontWeight: FontWeight.bold,
+                shadows: isVisible
+                    ? const [
+                        Shadow(
+                          color: Colors.white,
+                          blurRadius: 8,
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
+            large: (context, child) => Text(
+              text,
+              key: Key(curSecond.toString()),
+              style: TextStyle(
+                color: isVisible ? Colors.white : Colors.transparent,
+                fontSize: 150,
+                fontWeight: FontWeight.bold,
+                shadows: isVisible
+                    ? const [
+                        Shadow(
+                          color: Colors.white,
+                          blurRadius: 8,
+                        ),
+                      ]
+                    : null,
+              ),
             ),
           ),
         );

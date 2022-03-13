@@ -4,7 +4,8 @@ import 'dart:math';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:just_audio/just_audio.dart';
+
+import 'package:puzzle_hack/core/audio/bloc/audio_player_bloc.dart';
 
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item_bubble.dart';
 import '../pages/bloc/puzzle_screen_bloc.dart';
@@ -161,10 +162,9 @@ class _RandomBubbleState extends State<_RandomBubble> with SingleTickerProviderS
     );
 
   bool showSplash = false;
-  final player = AudioPlayer()..setVolume(0.5);
+
   Future<void> playAudio() async {
-    await player.setFilePath('assets/audio/splash.mp3');
-    await player.play();
+    context.read<AudioPlayerBloc>().add(PlaySplashEvent());
   }
 
   Widget _buildPositioned() {

@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:just_audio/just_audio.dart';
+
 import 'package:meta/meta.dart';
+import 'package:puzzle_hack/core/audio/bloc/audio_player_bloc.dart';
 
 import '../../../domain/entities/point.dart';
 import '../../../domain/entities/square_puzzle_matrix.dart';
@@ -12,21 +13,19 @@ part 'puzzle_screen_event.dart';
 part 'puzzle_screen_state.dart';
 
 class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
-  late AudioPlayer player = AudioPlayer();
+  final AudioPlayerBloc audioBloc;
   final stopWatch = Stopwatch();
   Timer? timer;
 
   Future<void> playAudio() async {
-    await player.setFilePath('assets/audio/tile_move.mp3');
-    player.play();
+    audioBloc.add(PlayTapEvent());
   }
 
   Future<void> playSuccess() async {
-    await player.setFilePath('assets/audio/success.mp3');
-    player.play();
+    audioBloc.add(PlaySuccessEvent());
   }
 
-  PuzzleScreenBloc()
+  PuzzleScreenBloc(this.audioBloc)
       : super(
           PuzzleScreenState(
             timePassed: Duration.zero.toString().substring(2, 7),
@@ -56,11 +55,11 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     add(StopStopWatch());
     emit(
       state.copyWith(
-        timePassed: Duration.zero.toString().substring(2, 7),
         isPlaying: false,
         isShuffling: true,
         totalMoves: 0,
         correctNo: 0,
+        timePassed: Duration.zero.toString().substring(2, 7),
       ),
     );
     final puzzle = state.puzzleMatrix;
@@ -72,7 +71,6 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
         correctNo: state.puzzleMatrix.correctlyPlacedTiles,
       ),
     );
-    add(StartStopWatch());
   }
 
   FutureOr<void> _onPointTapEvent(
@@ -82,7 +80,6 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     final puzzle = state.puzzleMatrix;
     final moved = puzzle.onPointTap(event.point);
     if (moved) {
-      playAudio();
       emit(
         state.copyWith(
           puzzleMatrix: puzzle,
@@ -93,6 +90,8 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
       if (state.isCompleted) {
         playSuccess();
         add(StopStopWatch());
+      } else {
+        playAudio();
       }
     }
   }
@@ -101,6 +100,7 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     StartPlayingEvent event,
     Emitter<PuzzleScreenState> emit,
   ) {
+    add(StartStopWatch());
     emit(
       state.copyWith(
         isPlaying: true,
@@ -112,7 +112,7 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     StartStopWatch event,
     Emitter<PuzzleScreenState> emit,
   ) {
-    stopWatch.stop();
+    stopWatch.reset();
     stopWatch.start();
     timer = Timer.periodic(
       const Duration(seconds: 1),
@@ -141,6 +141,6 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     Emitter<PuzzleScreenState> emit,
   ) {
     timer?.cancel();
-    stopWatch.stop();
+    stopWatch.reset();
   }
 }

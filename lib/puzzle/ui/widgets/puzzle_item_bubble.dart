@@ -1,6 +1,7 @@
 import 'package:dough/dough.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:puzzle_hack/core/widgets/responsive_layout_builder.dart';
 
 import 'package:vector_math/vector_math.dart' as vector_math;
 
@@ -41,22 +42,35 @@ class _PuzzleItemBubbleState extends State<PuzzleItemBubble> {
                       context.read<PuzzleScreenBloc>().add(PointTapEvent(widget.p));
                     }
                   },
-                  child: CustomPaint(
-                    painter: BackgroundBubble(),
-                    foregroundPainter: BubblePainter(),
-                    child: Center(
-                      child: Text(
-                        widget.p.data!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                          shadows: [
-                            Shadow(
-                              color: Color.fromARGB(255, 94, 173, 238),
-                              blurRadius: 10,
-                            )
-                          ],
+                  child: ResponsiveLayoutBuilder(
+                    small: (context, child) => SizedBox(
+                      height: (MediaQuery.of(context).size.height * 0.09),
+                      width: (MediaQuery.of(context).size.height * 0.09),
+                      child: child,
+                    ),
+                    medium: (context, child) => SizedBox(
+                      height: (MediaQuery.of(context).size.height * 0.2),
+                      width: (MediaQuery.of(context).size.height * 0.2),
+                      child: child!,
+                    ),
+                    large: (context, child) => child!,
+                    child: (size) => CustomPaint(
+                      painter: BackgroundBubble(),
+                      foregroundPainter: BubblePainter(),
+                      child: Center(
+                        child: Text(
+                          widget.p.data!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                color: Color.fromARGB(255, 94, 173, 238),
+                                blurRadius: 10,
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
