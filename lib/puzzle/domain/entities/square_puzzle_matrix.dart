@@ -48,11 +48,12 @@ class SquarePuzzleMatrix with ChangeNotifier {
       int j = random.nextInt(points.length - 2);
       swapData(points[i], points[j]);
       final flatPoints = points.fold<List<int?>>(
-          [],
-          (prev, cur) => [
-                ...prev,
-                cur.isBlank ? null : int.parse(cur.data!),
-              ]);
+        [],
+        (prev, cur) => [
+          ...prev,
+          cur.isBlank ? null : int.parse(cur.data!),
+        ],
+      );
       _solvable = isSolvable(flatPoints, order);
     }
   }

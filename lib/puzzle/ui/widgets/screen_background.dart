@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 
 import 'package:puzzle_hack/puzzle/ui/widgets/puzzle_item_bubble.dart';
 import 'liquid_background.dart';
@@ -54,7 +55,7 @@ class _ScreenBackgroundState extends State<ScreenBackground> with SingleTickerPr
   void tickBounce() {
     int i = 0;
     timer = Timer.periodic(
-      const Duration(milliseconds: 500),
+      const Duration(milliseconds: 1000),
       (timer) {
         i++;
         if (i == s.length) {
@@ -131,6 +132,11 @@ class _RandomBubbleState extends State<_RandomBubble> with SingleTickerProviderS
     );
 
   bool showSplash = false;
+  final player = AudioPlayer()..setVolume(0.5);
+  Future<void> playAudio() async {
+    await player.setFilePath('assets/audio/splash.mp3');
+    await player.play();
+  }
 
   Widget _buildPositioned() {
     return AnimatedPositioned(
@@ -140,6 +146,7 @@ class _RandomBubbleState extends State<_RandomBubble> with SingleTickerProviderS
         }
         if (widget.endB > 0) {
           showSplash = true;
+          playAudio();
           controller.forward();
         }
       },

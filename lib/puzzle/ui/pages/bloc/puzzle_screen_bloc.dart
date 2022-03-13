@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:meta/meta.dart';
 
 import '../../../domain/entities/point.dart';
@@ -11,6 +12,13 @@ part 'puzzle_screen_event.dart';
 part 'puzzle_screen_state.dart';
 
 class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
+  late AudioPlayer player = AudioPlayer();
+
+  Future<void> playAudio() async {
+    await player.setFilePath('assets/audio/tile_move.mp3');
+    player.play();
+  }
+
   PuzzleScreenBloc()
       : super(
           PuzzleScreenState(
@@ -60,11 +68,12 @@ class PuzzleScreenBloc extends Bloc<PuzzleScreenEvent, PuzzleScreenState> {
     final puzzle = state.puzzleMatrix;
     final moved = puzzle.onPointTap(event.point);
     if (moved) {
+      playAudio();
       emit(
         state.copyWith(
           puzzleMatrix: puzzle,
           totalMoves: state.puzzleMatrix.totalMoves,
-          correctNo: state.puzzleMatrix.correctlyPlacedTiles,
+          correctNo: 16, //state.puzzleMatrix.correctlyPlacedTiles,
         ),
       );
     }

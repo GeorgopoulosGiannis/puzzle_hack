@@ -25,6 +25,7 @@ class PuzzleItemBubble extends StatefulWidget {
 
 class _PuzzleItemBubbleState extends State<PuzzleItemBubble> {
   final cnt = DoughController();
+
   @override
   Widget build(BuildContext context) {
     return widget.p.isBlank

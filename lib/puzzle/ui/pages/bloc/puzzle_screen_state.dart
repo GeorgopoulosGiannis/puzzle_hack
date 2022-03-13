@@ -7,6 +7,7 @@ class PuzzleScreenState extends Equatable {
   final int totalMoves;
   final int correctNo;
   final bool isPlaying;
+  bool get isCompleted => correctNo == puzzleMatrix.order * puzzleMatrix.order && isPlaying;
 
   const PuzzleScreenState({
     required this.totalMoves,

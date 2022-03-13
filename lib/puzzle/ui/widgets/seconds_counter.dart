@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../pages/bloc/puzzle_screen_bloc.dart';
 
@@ -16,9 +17,17 @@ class _SecondsCounterState extends State<SecondsCounter> {
   Timer? timer;
   int curSecond = -1;
 
+  final AudioPlayer player = AudioPlayer();
+
+  Future<void> playAudio() async {
+    await player.setFilePath('assets/audio/click.mp3');
+    player.play();
+  }
+
   @override
   void dispose() {
     timer?.cancel();
+
     super.dispose();
   }
 
@@ -27,12 +36,17 @@ class _SecondsCounterState extends State<SecondsCounter> {
     return BlocConsumer<PuzzleScreenBloc, PuzzleScreenState>(
       listenWhen: (previous, current) => (!previous.isShuffling && current.isShuffling),
       listener: (context, state) {
-        timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
           curSecond = 4 - timer.tick;
+
           if (curSecond == -1) {
+            player.stop();
             timer.cancel();
             context.read<PuzzleScreenBloc>().add(StartPlayingEvent());
+          } else {
+            playAudio();
           }
+
           setState(() {});
         });
       },

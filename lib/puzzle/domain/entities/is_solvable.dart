@@ -1,4 +1,3 @@
-
 //https://stackoverflow.com/questions/34570344/check-if-15-puzzle-is-solvable
 bool isSolvable(List<int?> array, int width) {
   int parity = 0;
